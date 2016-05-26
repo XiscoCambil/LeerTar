@@ -9,14 +9,14 @@ import java.util.Scanner;
 public class Tar {
     private String filename = "";
     public List<InsideFiles> lista = new ArrayList<>();
-    public boolean existe = false;
+    public boolean ArchivoEncontrado = false;
 
     // Constructor
     public Tar(String filename) {
         this.filename = filename;
         File f = new File(this.filename);
-        if(f.exists()){
-            existe = true;
+        if (f.exists()) {
+            ArchivoEncontrado = true;
         }
     }
 
@@ -77,8 +77,6 @@ public class Tar {
                 nom = "";
                 octal = "";
             }
-            System.out.println(lista);
-
 
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -86,11 +84,6 @@ public class Tar {
     }
 
 
-    public static void main(String[] args) throws IOException {
-        Programa p = new Programa();
-        p.menu();
-        p.ControlEleccion();
-    }
 }
 
 class InsideFiles {
@@ -101,27 +94,11 @@ class InsideFiles {
         return contenido;
     }
 
-    public void setContenido(byte[] contenido) {
-        this.contenido = contenido;
-    }
-
     private byte[] contenido;
-
-    public void setNom(String nom) {
-        this.nom = nom;
-    }
-
-    public void setSize(int size) {
-        this.size = size;
-    }
 
     public String getNom() {
 
         return nom;
-    }
-
-    public int getSize() {
-        return size;
     }
 
     public String toString() {
@@ -138,44 +115,117 @@ class InsideFiles {
 }
 
 class Programa {
-    private int option = 0;
-    Tar t;
-    Scanner s = new Scanner(System.in);
 
-    public Programa() {
+    public Tar tar;
 
-    }
-
-    public void menu() {
-        while (option < 1 || option > 3) {
-            System.out.println(
-                    "Introduce la accion a realizar \n" +
-                            "1. Cargar archivo \n" +
-                            "2. Listar contenido de archivo \n" +
-                            "3. Extraer archivo \n" +
-                            "Selecciona la opcion que desea: "
-            );
-            option = s.nextInt();
+    public static void main(String[] args) throws IOException {
+        Scanner s = new Scanner(System.in);
+        boolean activado = false;
+        Programa p = new Programa();
+        while (true) {
+            System.out.println("Introduzca los comandos: ");
+            String cadena = s.nextLine();
+            ListaComandos listado = new ListaComandos(cadena);
+            Comando[] comandos = listado.ClasificarTexto();
+            System.out.println(comandos.length);
+            System.out.println(comandos[0].getTexto());
+            switch (comandos[0].getTexto()) {
+                case "load":
+                    p.load(comandos[1].getTexto());
+                    break;
+                case "list":
+                    p.list();
+                    break;
+                case "extract":
+                    p.extract(comandos[1].getTexto(), comandos[2].getTexto());
+                    break;
+                default:
+                    System.out.println("El comando no es correcto");
+            }
 
         }
-
     }
 
-    public void ControlEleccion() {
-        switch (option) {
-            case 1:
-//                load();
+    public void load(String ruta) {
+    tar = new Tar(ruta);
+    if(tar.ArchivoEncontrado){
+        System.out.println("Archivo encontrado");
+        System.out.println("Cargando en memoria");
+        System.out.println(" ");
+        tar.expand();
+    }    else {
+        System.out.println("El archivo no existe");
+
+    }
+    }
+
+    public void list() throws IOException {
+        if(tar != null){
+            String[] lista = tar.list();
+            for (int i = 0; i < lista.length; i++) {
+                System.out.println((i+1)+". Archivo: "+lista[i]);
+            }
+        }    else {
+            System.out.println("Todavia no se a cargado ningun archivo");
+
         }
     }
 
-    public void load() throws FileNotFoundException{
-        boolean ruta = false;
-        while (!ruta){
-            System.out.println("Introduce la ruta del archivo: ");
-            String rutaArchivoEncontrar = s.next();
-            ruta = t.existe;
+    public void extract(String nombre, String destino) throws IOException {
+        if(tar != null){
+         FileOutputStream nuevoArchivo = new FileOutputStream(destino);
+         nuevoArchivo.write(tar.getBytes(nombre));
+        }    else {
+            System.out.println("Todavia no se a cargado ningun archivo");
+
         }
-        System.out.println("El archivo no se ha podido encontrar!");
+    }
+
+
+}
+
+
+class Comando {
+
+    public String getTexto() {
+        return texto;
+    }
+
+    private String texto;
+
+    public Comando(String texto) {
+        this.texto = texto;
+    }
+
+}
+
+class ListaComandos {
+
+    private String texto;
+
+    public ListaComandos(String texto) {
+        this.texto = texto;
+    }
+
+    public Comando[] ClasificarTexto() {
+        String chunk = "";
+        List<Comando> cadena = new ArrayList<>();
+        for (int i = 0; i < texto.length(); i++) {
+            if(i == texto.length()-1){
+                chunk+=texto.charAt(i);
+                cadena.add(new Comando(chunk));
+                break;
+            }
+            if (texto.charAt(i) != 32 ) {
+                chunk += texto.charAt(i);
+            } else {
+                cadena.add(new Comando(chunk));
+                chunk = "";
+            }
+        }
+        Comando[] comandos = new Comando[cadena.size()];
+        return cadena.toArray(comandos);
 
     }
+
 }
