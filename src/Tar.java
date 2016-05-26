@@ -126,17 +126,17 @@ class Programa {
             System.out.println("Introduzca los comandos: ");
             String cadena = s.nextLine();
             ListaComandos listado = new ListaComandos(cadena);
-            Comando[] comandos = listado.ClasificarTexto();
+            String[] comandos = listado.ClasificarTexto();
             if (comandos.length == 0) {
                 System.out.println("No has introducido nigun comando\n");
                 continue;
             }
-            switch (comandos[0].getTexto()) {
+            switch (comandos[0]) {
                 case "load":
                     if (comandos.length != 2)
                         System.out.println("El comando load solo necesita el parametro 'ruta_archivo_tar'\n");
                     else {
-                        p.load(comandos[1].getTexto());
+                        p.load(comandos[1]);
                     }
                     break;
                 case "list":
@@ -146,7 +146,7 @@ class Programa {
                 case "extract":
                     if (comandos.length != 3)
                         System.out.println("El comando extract necesita dos parametros 'Nombre_del_archivo_extraer' 'ruta_destino/nombre_archivo'\n");
-                    else p.extract(comandos[1].getTexto(), comandos[2].getTexto());
+                    else p.extract(comandos[1], comandos[2]);
                     break;
                 case "exit":
                     fin = true;
@@ -166,7 +166,7 @@ class Programa {
 
                     break;
                 default:
-                    System.out.println("El " + comandos[0].getTexto() + " no existe\n");
+                    System.out.println("El " + comandos[0] + " no existe\n");
             }
 
         }
@@ -235,23 +235,6 @@ class Programa {
             System.out.println("Todavia no se a cargado ningun archivo tar, utilize el comando 'load'\n");
         }
     }
-
-
-}
-
-
-class Comando {
-
-    public String getTexto() {
-        return texto;
-    }
-
-    private String texto;
-
-    public Comando(String texto) {
-        this.texto = texto;
-    }
-
 }
 
 class ListaComandos {
@@ -262,25 +245,9 @@ class ListaComandos {
         this.texto = texto;
     }
 
-    public Comando[] ClasificarTexto() {
-        String chunk = "";
-        List<Comando> cadena = new ArrayList<>();
-        for (int i = 0; i < texto.length(); i++) {
-            if (i == texto.length() - 1) {
-                chunk += texto.charAt(i);
-                cadena.add(new Comando(chunk));
-                break;
-            }
-            if (texto.charAt(i) != 32) {
-                chunk += texto.charAt(i);
-            } else {
-                cadena.add(new Comando(chunk));
-                chunk = "";
-            }
-        }
-        Comando[] comandos = new Comando[cadena.size()];
-        return cadena.toArray(comandos);
+    public String[] ClasificarTexto() {
+        String[] comandos = texto.split(" +");
 
+        return comandos;
     }
-
 }
