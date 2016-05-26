@@ -121,8 +121,9 @@ class Programa {
     public static void main(String[] args) throws IOException {
         Scanner s = new Scanner(System.in);
         boolean activado = false;
+        boolean fin = false;
         Programa p = new Programa();
-        while (true) {
+        while (!fin) {
             System.out.println("Introduzca los comandos: ");
             String cadena = s.nextLine();
             ListaComandos listado = new ListaComandos(cadena);
@@ -139,6 +140,10 @@ class Programa {
                 case "extract":
                     p.extract(comandos[1].getTexto(), comandos[2].getTexto());
                     break;
+                case "exit":
+                   fin = true;
+                    System.out.println("adios");
+                    break;
                 default:
                     System.out.println("El comando no es correcto");
             }
@@ -147,35 +152,35 @@ class Programa {
     }
 
     public void load(String ruta) {
-    tar = new Tar(ruta);
-    if(tar.ArchivoEncontrado){
-        System.out.println("Archivo encontrado");
-        System.out.println("Cargando en memoria");
-        System.out.println(" ");
-        tar.expand();
-    }    else {
-        System.out.println("El archivo no existe");
+        tar = new Tar(ruta);
+        if (tar.ArchivoEncontrado) {
+            System.out.println("Archivo encontrado");
+            System.out.println("Cargando en memoria");
+            tar.expand();
+        } else {
+            System.out.println("El archivo no existe");
 
-    }
+        }
     }
 
     public void list() throws IOException {
-        if(tar != null){
+        if (tar != null) {
             String[] lista = tar.list();
             for (int i = 0; i < lista.length; i++) {
-                System.out.println((i+1)+". Archivo: "+lista[i]);
+                System.out.println((i + 1) + ". Archivo: " + lista[i]);
             }
-        }    else {
+        } else {
             System.out.println("Todavia no se a cargado ningun archivo");
 
         }
     }
 
     public void extract(String nombre, String destino) throws IOException {
-        if(tar != null){
-         FileOutputStream nuevoArchivo = new FileOutputStream(destino);
-         nuevoArchivo.write(tar.getBytes(nombre));
-        }    else {
+        if (tar != null) {
+            FileOutputStream nuevoArchivo = new FileOutputStream(destino);
+            nuevoArchivo.write(tar.getBytes(nombre));
+            nuevoArchivo.close();
+        } else {
             System.out.println("Todavia no se a cargado ningun archivo");
 
         }
@@ -211,12 +216,12 @@ class ListaComandos {
         String chunk = "";
         List<Comando> cadena = new ArrayList<>();
         for (int i = 0; i < texto.length(); i++) {
-            if(i == texto.length()-1){
-                chunk+=texto.charAt(i);
+            if (i == texto.length() - 1) {
+                chunk += texto.charAt(i);
                 cadena.add(new Comando(chunk));
                 break;
             }
-            if (texto.charAt(i) != 32 ) {
+            if (texto.charAt(i) != 32) {
                 chunk += texto.charAt(i);
             } else {
                 cadena.add(new Comando(chunk));
