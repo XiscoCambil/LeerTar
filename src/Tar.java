@@ -2,6 +2,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import java.util.regex.Pattern;
 
 /**
  * Created by fjcambilr on 23/05/16.
@@ -82,8 +83,6 @@ public class Tar {
             throw new RuntimeException(e);
         }
     }
-
-
 }
 
 class InsideFiles {
@@ -118,9 +117,8 @@ class Programa {
 
     public Tar tar;
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, InterruptedException {
         Scanner s = new Scanner(System.in);
-        boolean activado = false;
         boolean fin = false;
         Programa p = new Programa();
         while (!fin) {
@@ -128,61 +126,107 @@ class Programa {
             String cadena = s.nextLine();
             ListaComandos listado = new ListaComandos(cadena);
             Comando[] comandos = listado.ClasificarTexto();
-            System.out.println(comandos.length);
-            System.out.println(comandos[0].getTexto());
+            if (comandos.length == 0){ System.out.println("No has introducido nigun comando\n"); continue;}
             switch (comandos[0].getTexto()) {
                 case "load":
-                    p.load(comandos[1].getTexto());
+                    if (comandos.length != 2)
+                        System.out.println("El comando load solo necesita el parametro 'ruta_archivo_tar'\n");
+                    else {
+                        p.load(comandos[1].getTexto());
+                    }
                     break;
                 case "list":
-                    p.list();
+                    if (comandos.length != 1) System.out.println("El comando list no tiene parametro\n");
+                    else p.list();
                     break;
                 case "extract":
-                    p.extract(comandos[1].getTexto(), comandos[2].getTexto());
+                    if (comandos.length != 3)
+                        System.out.println("El comando extract necesita dos parametros 'Nombre_del_archivo_extraer' 'ruta_destino/nombre_archivo'\n");
+                    else p.extract(comandos[1].getTexto(), comandos[2].getTexto());
+                    System.out.println(comandos[1].getTexto());
                     break;
                 case "exit":
-                   fin = true;
-                    System.out.println("adios");
+                    fin = true;
+                    System.out.println("Cerrando el programa...");
+                    Thread.sleep(2000);
+                    break;
+                case "help":
+                    System.out.println("Guia de comandos:\n" +
+                            "--------------------------------\n"+
+                            "load: Cargar archivo tar en memoria\n" +
+                            "      uso: load  'ruta_archivo.tar \n'"+
+                            "list: listar archivos dentro de tar   \n" +
+                            "      uso: list  "+
+                            "extract: Extraer archivo del tar     \n"+
+                            "      uso: extract 'Nombre_del_archivo_extraer' 'ruta_destino/nombre_del_archivo'  Extraer un archivo del tar\n"+
+                            "      uso: extract -all 'ruta_destino'  Extraer todos los archivos del tar\n"+
+                            "--------------------------------\n");
+
                     break;
                 default:
-                    System.out.println("El comando no es correcto");
+                    System.out.println("El "+comandos[0].getTexto()+" no existe\n");
             }
 
         }
     }
 
-    public void load(String ruta) {
+    public void load(String ruta) throws InterruptedException {
         tar = new Tar(ruta);
+        System.out.println("Buscando archivo...");
+        Thread.sleep(1000);
         if (tar.ArchivoEncontrado) {
-            System.out.println("Archivo encontrado");
-            System.out.println("Cargando en memoria");
+            System.out.println("Cargando en memoria...");
+            Thread.sleep(3000);
             tar.expand();
+            System.out.println("Listo para ser utilizado\n");
         } else {
-            System.out.println("El archivo no existe");
-
+            System.out.println("El archivo no existe\n");
+            Thread.sleep(1000);
         }
     }
 
-    public void list() throws IOException {
+    public void list() throws IOException, InterruptedException {
         if (tar != null) {
             String[] lista = tar.list();
             for (int i = 0; i < lista.length; i++) {
                 System.out.println((i + 1) + ". Archivo: " + lista[i]);
             }
         } else {
-            System.out.println("Todavia no se a cargado ningun archivo");
-
+            System.out.println("Todavia no se a cargado ningun archivo tar, utilize el comando 'load'\n");
         }
     }
 
-    public void extract(String nombre, String destino) throws IOException {
+    public void extract(String nombre, String destino) throws IOException, InterruptedException {
         if (tar != null) {
-            FileOutputStream nuevoArchivo = new FileOutputStream(destino);
-            nuevoArchivo.write(tar.getBytes(nombre));
-            nuevoArchivo.close();
-        } else {
-            System.out.println("Todavia no se a cargado ningun archivo");
+            if(nombre.equals("-all")){
+                String chunk;
+                String sSistemaOperativo = System.getProperty("os.name");
+                String[] archivos = tar.list();
+                if(destino.charAt(destino.length()-1) != 92 && destino.charAt(destino.length()-1) != 47) {
+                        chunk = destino.substring(0,6);
+                        System.out.println(chunk);
+                        if(chunk == "Windows" || chunk == "windows")destino+=(char)92;
+                        else destino+="/";
+                }
+                for (int i = 0; i < archivos.length ; i++) {
+                        String ruta = destino+archivos[i];
+                        FileOutputStream allArchivos = new FileOutputStream(ruta);
+                        allArchivos.write(tar.getBytes(archivos[i]));
+                        allArchivos.close();
+                    }
 
+            }else {
+                FileOutputStream nuevoArchivo = new FileOutputStream(destino);
+                System.out.println("Extrayendo los datos..");
+                Thread.sleep(2000);
+                System.out.println("Creando el archivo..");
+                nuevoArchivo.write(tar.getBytes(nombre));
+                Thread.sleep(2000);
+                nuevoArchivo.close();
+                System.out.println("Archivo creado en " + destino + "\n");
+            }
+        } else {
+            System.out.println("Todavia no se a cargado ningun archivo tar, utilize el comando 'load'\n");
         }
     }
 
