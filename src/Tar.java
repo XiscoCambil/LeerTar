@@ -1,5 +1,6 @@
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 import java.util.regex.Matcher;
@@ -10,7 +11,7 @@ import java.util.regex.Pattern;
  */
 public class Tar {
     private String filename = "";
-    public List<InsideFiles> lista = new ArrayList<>();
+    private final List<InsideFiles> lista = new ArrayList<>();
     public boolean ArchivoEncontrado = false;
 
     // Constructor
@@ -23,7 +24,7 @@ public class Tar {
     }
 
     // Torna un array amb la llista de fitxers que hi ha dins el TAR
-    public String[] list() throws IOException {
+    public String[] list() {
         String[] listaArchivos = new String[lista.size()];
         for (int i = 0; i < lista.size(); i++) {
             listaArchivos[i] = lista.get(i).getNom();
@@ -34,9 +35,9 @@ public class Tar {
     // Torna un array de bytes amb el contingut del fitxer que té per nom
 // igual a l'String «name» que passem per paràmetre
     public byte[] getBytes(String name) {
-        for (int i = 0; i < lista.size(); i++) {
-            if (name.equals(lista.get(i).getNom())) {
-                return lista.get(i).getContenido();
+        for (InsideFiles aLista : lista) {
+            if (name.equals(aLista.getNom())) {
+                return aLista.getContenido();
             }
         }
         return null;
@@ -94,7 +95,7 @@ class InsideFiles {
         return contenido;
     }
 
-    private byte[] contenido;
+    private final byte[] contenido;
 
     public String getNom() {
 
@@ -104,7 +105,7 @@ class InsideFiles {
     public String toString() {
         return "nombre: " + nom + "\n" +
                 "Tamaño: " + size + "\n" +
-                "Contenido: " + contenido;
+                "Contenido: " + Arrays.toString(contenido);
     }
 
     public InsideFiles(String nom, int size, byte[] contenido) {
@@ -116,7 +117,7 @@ class InsideFiles {
 
 class Programa {
 
-    public Tar tar;
+    private Tar tar;
 
     public static void main(String[] args) throws IOException, InterruptedException {
         Scanner s = new Scanner(System.in);
@@ -172,7 +173,7 @@ class Programa {
         }
     }
 
-    public void load(String ruta) throws InterruptedException {
+    private void load(String ruta) {
         tar = new Tar(ruta);
         System.out.println("Buscando archivo...");
         if (tar.ArchivoEncontrado) {
@@ -184,7 +185,7 @@ class Programa {
         }
     }
 
-    public void list() throws IOException, InterruptedException {
+    private void list() throws IOException {
         if (tar != null) {
             String[] lista = tar.list();
             for (int i = 0; i < lista.length; i++) {
@@ -195,7 +196,7 @@ class Programa {
         }
     }
 
-    public void extract(String nombre, String destino) throws IOException, InterruptedException {
+    private void extract(String nombre, String destino) throws IOException {
         if (tar != null) {
            try {
                if (nombre.equals("-all")) {
@@ -210,10 +211,10 @@ class Programa {
                    }
                    System.out.println("Extrayendo los datos..");
                    System.out.println("Creando el archivo..");
-                   for (int i = 0; i < archivos.length; i++) {
-                       String ruta = destino + archivos[i];
+                   for (String archivo : archivos) {
+                       String ruta = destino + archivo;
                        FileOutputStream allArchivos = new FileOutputStream(ruta);
-                       allArchivos.write(tar.getBytes(archivos[i]));
+                       allArchivos.write(tar.getBytes(archivo));
                        allArchivos.close();
                    }
                    System.out.println("Archivo creado en " + destino + "\n");
@@ -239,15 +240,14 @@ class Programa {
 
 class ListaComandos {
 
-    private String texto;
+    private final String texto;
 
     public ListaComandos(String texto) {
         this.texto = texto;
     }
 
     public String[] ClasificarTexto() {
-        String[] comandos = texto.split(" +");
 
-        return comandos;
+        return texto.split(" +");
     }
 }
