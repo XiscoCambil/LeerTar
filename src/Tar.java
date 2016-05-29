@@ -35,9 +35,9 @@ public class Tar {
     // Torna un array de bytes amb el contingut del fitxer que té per nom
 // igual a l'String «name» que passem per paràmetre
     public byte[] getBytes(String name) {
-        for (InsideFiles aLista : lista) {
-            if (name.equals(aLista.getNom())) {
-                return aLista.getContenido();
+        for (InsideFiles archivoLista : lista) {
+            if (name.equals(archivoLista.getNom())) {
+                return archivoLista.getContenido();
             }
         }
         return null;
@@ -124,7 +124,7 @@ class Programa {
         boolean fin = false;
         Programa p = new Programa();
         while (!fin) {
-            System.out.println("Introduzca los comandos: ");
+            System.out.println("Introduzca los comandos(introduce help para mas ayuda): ");
             String cadena = s.nextLine();
             ListaComandos listado = new ListaComandos(cadena);
             String[] comandos = listado.ClasificarTexto();
@@ -205,8 +205,7 @@ class Programa {
                    if (destino.charAt(destino.length() - 1) != 92 && destino.charAt(destino.length() - 1) != 47) {
                        Pattern p = Pattern.compile("Windows*");
                        Matcher m = p.matcher(sSistemaOperativo);
-                       boolean b = m.matches();
-                       if (b) destino += (char) 92;
+                       if (m.matches()) destino += (char) 92;
                        else destino += "/";
                    }
                    System.out.println("Extrayendo los datos..");
@@ -217,7 +216,7 @@ class Programa {
                        allArchivos.write(tar.getBytes(archivo));
                        allArchivos.close();
                    }
-                   System.out.println("Archivo creado en " + destino + "\n");
+                   System.out.println("Archivos creados en " + destino + "\n");
                } else {
                    FileOutputStream nuevoArchivo = new FileOutputStream(destino);
                    nuevoArchivo.write(tar.getBytes(nombre));
@@ -229,9 +228,8 @@ class Programa {
            }catch (NullPointerException nl){
                System.out.println("El archivo no existe");
            }catch (FileNotFoundException fl){
-               System.out.println("El directorio no existe");
+               System.out.println("la ruta no existe o no es posible acceder");
            }
-
         } else {
             System.out.println("Todavia no se a cargado ningun archivo tar, utilize el comando 'load'\n");
         }

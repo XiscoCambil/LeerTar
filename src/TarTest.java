@@ -11,7 +11,10 @@ import static org.junit.Assert.*;
 public class TarTest {
     @Test
     public void test1() throws Exception {
-        Tar tar = new Tar("/tmp/archive2.tar");
+        char c = (char)92;
+        String ruta = "c:";
+        ruta+=(char)92+"tar"+(char)92+"archive2.tar";
+        Tar tar = new Tar(ruta);
         tar.expand();
 
         assertArrayEquals(new String[]{
